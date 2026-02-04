@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BGM</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont;
+      text-align: center;
+      background: #111;
+      color: #fff;
+      padding-top: 20vh;
+    }
+    button {
+      font-size: 18px;
+      padding: 12px 24px;
+      border-radius: 999px;
+      border: none;
+      cursor: pointer;
+    }
+    #reveal {
+      display: none;
+      margin-top: 24px;
+      font-size: 16px;
+      opacity: 0.85;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>🎧 請聆聽</h2>
+
+  <audio id="bgm" src="music.mp3"></audio>
+
+  <button onclick="playMusic()">▶ 播放</button>
+
+  <div id="reveal">
+    你剛剛聽到的是：<br>
+    <strong>（角色名稱）</strong>
+  </div>
+
+  <script>
+    function playMusic() {
+      const audio = document.getElementById("bgm");
+      audio.play();
+
+      // 15 秒後顯示角色
+      setTimeout(() => {
+        document.getElementById("reveal").style.display = "block";
+      }, 15000);
+    }
+  </script>
+
+</body>
+</html>
