@@ -1,0 +1,170 @@
+
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>BGM</title>
+  <style>
+    body{
+      font-family: system-ui, -apple-system, BlinkMacSystemFont;
+      text-align:center;
+      background:#111;
+      color:#fff;
+      padding: 18vh 16px 40px;
+    }
+    h2{ margin:0 0 18px; font-weight:700; }
+    .row{ display:flex; gap:12px; justify-content:center; flex-wrap:wrap; }
+    button{
+      font-size:18px; padding:12px 22px; border-radius:999px;
+      border:none; cursor:pointer;
+    }
+    button.secondary{
+      opacity:.92;
+    }
+    #hint{ margin-top:14px; font-size:14px; opacity:.75; }
+    #reveal{
+      display:none; margin-top:22px; font-size:16px; opacity:.92; line-height:1.6;
+    }
+    #status{ margin-top:14px; font-size:14px; opacity:.75; }
+  </style>
+</head>
+<body>
+
+  <h2>🎧 請聆聽</h2>
+
+  <!-- 1) 把這裡改成你的音檔檔名 -->
+  <audio id="bgm" src="［Official Sound Track］Mitsuri Theme Demon Slayer _ 公式サウンドトラック 蜜璃のテーマ 鬼滅の刃.mp3" preload="none"></audio>
+
+  <div class="row">
+    <!-- 播放/暫停切換 -->
+    <button id="playBtn" onclick="togglePlay()">▶ 播放</button>
+
+    <!-- 手動揭曉（你想什麼時候公布就什麼時候按） -->
+    <button class="secondary" id="revealBtn" onclick="revealNow()">👀 公布答案</button>
+  </div>
+
+  <div id="status">狀態：未播放</div>
+  <div id="hint">（可隨時暫停 / 續播；答案由你決定什麼時候揭曉）</div>
+
+  <div id="reveal">
+    你剛剛聽到的是：<br>
+    <!-- 2) 把這裡改成你要的角色/答案 -->
+    <strong id="answerText">甘露寺蜜璃</strong>
+    <div style="margin-top:14px;">
+      <img
+        src="蜜璃.png"
+        alt="角色圖片"
+        style="
+          width:180px;
+          max-width:70%;
+          border-radius:16px;
+        "
+      />
+    </div>
+  </div>
+
+  <script>
+    /***************
+     * 你可以改的設定
+     ***************/
+    const REVEAL_MODE = "manual"; 
+    // "manual" = 只按「公布答案」才顯示
+    // "after_seconds" = 播放後 X 秒自動顯示
+    // "on_end" = 播完才顯示
+
+    const REVEAL_AFTER_SECONDS = 15; // only used when REVEAL_MODE="after_seconds"
+
+    /***************
+     * 程式本體
+     ***************/
+    const audio = document.getElementById("bgm");
+    const playBtn = document.getElementById("playBtn");
+    const revealDiv = document.getElementById("reveal");
+    const statusDiv = document.getElementById("status");
+
+    let revealTimer = null;
+    let revealed = false;
+
+    function setStatus(text){
+      statusDiv.textContent = "狀態：" + text;
+    }
+
+    function clearRevealTimer(){
+      if (revealTimer) {
+        clearTimeout(revealTimer);
+        revealTimer = null;
+      }
+    }
+
+    function scheduleRevealIfNeeded(){
+      clearRevealTimer();
+
+      if (revealed) return;
+
+      if (REVEAL_MODE === "after_seconds") {
+        revealTimer = setTimeout(() => {
+          revealNow();
+        }, REVEAL_AFTER_SECONDS * 1000);
+      }
+      // "manual" 不做事
+      // "on_end" 由 ended 事件處理
+    }
+
+    async function togglePlay(){
+      try {
+        if (audio.paused) {
+          await audio.play(); // 需要使用者點擊才會成功（瀏覽器規則）
+          playBtn.textContent = "⏸ 暫停";
+          setStatus("播放中");
+          scheduleRevealIfNeeded();
+        } else {
+          audio.pause();
+          playBtn.textContent = "▶ 續播";
+          setStatus("已暫停");
+          // 暫停時你可以選擇「是否取消自動揭曉計時」
+          // 這裡採用：暫停就取消計時，續播再重新計時
+          clearRevealTimer();
+        }
+      } catch (e) {
+        // 某些瀏覽器/情境會擋 autoplay，提示使用者再點一次即可
+        alert("如果沒有聲音，請再點一次播放（瀏覽器限制）");
+      }
+    }
+
+    function revealNow(){
+      revealed = true;
+      clearRevealTimer();
+      revealDiv.style.display = "block";
+    }
+
+    // 播完行為
+    audio.addEventListener("ended", () => {
+      playBtn.textContent = "▶ 重播";
+      setStatus("播放結束");
+      clearRevealTimer();
+      if (REVEAL_MODE === "on_end" && !revealed) {
+        revealNow();
+      }
+      // 重播時從頭開始
+      audio.currentTime = 0;
+    });
+
+    // 只要按下重播/播放時，若按鈕顯示「▶ 重播」就從頭播
+    // （可選：你也可以取消這段，維持原本 togglePlay 即可）
+    playBtn.addEventListener("click", () => {
+      if (playBtn.textContent.includes("重播")) {
+        audio.currentTime = 0;
+      }
+    });
+  </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
